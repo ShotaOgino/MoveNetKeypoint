@@ -7,16 +7,55 @@ import cv2
 interpreter = tf.lite.Interpreter(model_path='model.tflite')
 interpreter.allocate_tensors()
 
+KEY_POINT_IND = {
+    'NOSE' : 0,
+    'LEFT_EYE' : 1,
+    'RIGHT_EYE' : 2,
+    'LEFT_EAR' : 3,
+    'RIGHT_EAR' : 4,
+    'LEFT_SHOULDER' : 5,
+    'RIGHT_SHOULDER' : 6,
+    'LEFT_ELBOW' : 7,
+    'RIGHT_ELBOW' : 8,
+    'LEFT_WRIST' : 9,
+    'RIGHT_WRIST' : 10,
+    'LEFT_HIP' : 11,
+    'RIGHT_HIP' :12,
+    'LEFT_KNEE' : 13,
+    'RIGHT_KNEE' : 14,
+    'LEFT_ANKLE' : 15,
+    'RIGHT_ANKLE' : 16,
+}
 
 #draw Keypoints
 def draw_keypoints(frame, keypoints, confidence_threshold):
     y, x, c = frame.shape
     shaped = np.squeeze(np.multiply(keypoints, [y,x,1]))
     
+    # Get the coordinates of the left and right ear
+    left_ear = shaped[3]
+    right_ear = shaped[4]
+    
     for kp in shaped:
         ky, kx, kp_conf = kp
         if kp_conf > confidence_threshold:
             cv2.circle(frame, (int(kx), int(ky)), 4, (0,255,0), -1) 
+            # 全てのキーポイントを表示
+            for i, kp in enumerate(shaped):
+                ky, kx, kp_conf = kp
+
+                if kp_conf > confidence_threshold:
+                    cv2.putText(frame, f'{list(KEY_POINT_IND.keys())[i]}: x={kx}, y={ky}', (10, 60 + i*20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                else:
+                    cv2.putText(frame, f'{list(KEY_POINT_IND.keys())[i]}: x={kx}, y={ky}', (10, 60 + i*20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (240, 240, 240), 1)
+
+            print(left_ear[1]-right_ear[1])
+
+            # 体の向きを推定
+            body_direction = 'toward the camera' if left_ear[1] > right_ear[1] else 'back'
+
+            # ビデオに体の向きを書き込む
+            cv2.putText(frame, body_direction, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
 #draw edges
 EDGES = {
