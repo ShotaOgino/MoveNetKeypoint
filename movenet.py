@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 from matplotlib import pyplot as plt
 import cv2
+import csv
 
 #load model
 interpreter = tf.lite.Interpreter(model_path='model.tflite')
@@ -50,6 +51,10 @@ def draw_keypoints(frame, keypoints, confidence_threshold):
                     cv2.putText(frame, f'{list(KEY_POINT_IND.keys())[i]}: x={kx}, y={ky}', (10, 60 + i*20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (240, 240, 240), 1)
 
             print(left_ear[1]-right_ear[1])
+            # 推論結果をcsvファイルに保存
+            with open('inference_results.csv', 'a', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow([left_ear[1]-right_ear[1]])
 
             # 体の向きを推定
             body_direction = 'toward the camera' if left_ear[1] > right_ear[1] else 'back'
@@ -93,10 +98,14 @@ def draw_connections(frame, keypoints, edges, confidence_threshold):
             cv2.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0,0,255), 2)
 
 # 動画ファイルのパスを指定します
-video_path = './test/sample.mp4'  # ここに動画ファイルのパスを入力してください
+video_path = './video/input/sample1.mp4'  # ここに動画ファイルのパスを入力してください
 
 #make detection
 cap = cv2.VideoCapture(video_path)
+# ビデオライターを設定します
+fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
+out = cv2.VideoWriter('./video/output/sample1.mp4', fourcc, 20.0, (640, 480))
+
 while cap.isOpened():
     ret, frame = cap.read()
     
@@ -123,5 +132,7 @@ while cap.isOpened():
     if cv2.waitKey(10) & 0xFF==ord('q'):
         break
         
+# リソースを解放します
 cap.release()
+out.release()
 cv2.destroyAllWindows()
