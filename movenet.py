@@ -92,8 +92,11 @@ def draw_connections(frame, keypoints, edges, confidence_threshold):
         if (c1 > confidence_threshold) & (c2 > confidence_threshold):      
             cv2.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0,0,255), 2)
 
+# 動画ファイルのパスを指定します
+video_path = './test/sample.mp4'  # ここに動画ファイルのパスを入力してください
+
 #make detection
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(video_path)
 while cap.isOpened():
     ret, frame = cap.read()
     
